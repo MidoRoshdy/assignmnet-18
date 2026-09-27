@@ -1,0 +1,416 @@
+{
+  "info": {
+    "name": "Social App API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "email", "value": "ali@test.com" },
+    { "key": "password", "value": "123456" },
+    { "key": "token", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "friendId", "value": "" },
+    { "key": "friendEmail", "value": "sara@test.com" },
+    { "key": "postId", "value": "" },
+    { "key": "commentId", "value": "" },
+    { "key": "groupId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{baseUrl}}/health-check"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"ali ahmed\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"phone\": \"01000000000\",\n  \"gender\": \"male\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (saves token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data) {",
+                  "  pm.collectionVariables.set('token', json.data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "  pm.collectionVariables.set('userId', json.data.userData._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh token (saves new tokens)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data) {",
+                  "  pm.collectionVariables.set('token', json.data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/refresh-token",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Confirm email",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/confirm-email",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"otp\": \"123456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Resend confirm email OTP",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/resend-confirm-email",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\"\n}" }
+          }
+        },
+        {
+          "name": "Forget password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/forget-password",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\"\n}" }
+          }
+        },
+        {
+          "name": "Reset password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/reset-password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"otp\": \"123456\",\n  \"password\": \"654321\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": { "method": "POST", "url": "{{baseUrl}}/auth/logout" }
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Get my profile (friends, requests, groups)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/user" }
+        },
+        {
+          "name": "Update profile",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"ali hassan\",\n  \"phone\": \"01111111111\",\n  \"gender\": \"male\",\n  \"profilePicture\": \"me.png\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Change password",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/users/password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"{{password}}\",\n  \"newPassword\": \"654321\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get user public profile",
+          "request": { "method": "GET", "url": "{{baseUrl}}/users/{{friendId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Friends",
+      "item": [
+        {
+          "name": "Send friend request (by email)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/users/friends/request/{{friendEmail}}"
+          }
+        },
+        {
+          "name": "Send friend request (by id)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/users/friends/request/{{friendId}}"
+          }
+        },
+        {
+          "name": "Cancel sent friend request",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/users/friends/request/{{friendId}}"
+          }
+        },
+        {
+          "name": "Accept friend request",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/users/friends/accept/{{friendId}}"
+          }
+        },
+        {
+          "name": "Reject friend request",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/users/friends/reject/{{friendId}}"
+          }
+        },
+        {
+          "name": "Remove friend",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/users/friends/{{friendId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Post",
+      "item": [
+        {
+          "name": "Create post (saves postId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data) pm.collectionVariables.set('postId', json.data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/post",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"my first post\",\n  \"visibility\": \"public\",\n  \"status\": \"published\",\n  \"attachments\": []\n}"
+            }
+          }
+        },
+        {
+          "name": "Get feed",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/post?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["post"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get posts of a user",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/post/user/{{userId}}?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["post", "user", "{{userId}}"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get one post",
+          "request": { "method": "GET", "url": "{{baseUrl}}/post/{{postId}}" }
+        },
+        {
+          "name": "Update post",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/post/{{postId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"edited post\",\n  \"visibility\": \"private\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Like / unlike post",
+          "request": { "method": "PATCH", "url": "{{baseUrl}}/post/{{postId}}/like" }
+        },
+        {
+          "name": "Delete post",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/post/{{postId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Comment",
+      "item": [
+        {
+          "name": "Add comment (saves commentId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data) pm.collectionVariables.set('commentId', json.data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/comment/post/{{postId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"content\": \"nice post\"\n}" }
+          }
+        },
+        {
+          "name": "Get comments of post",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/comment/post/{{postId}}?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["comment", "post", "{{postId}}"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update comment",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/comment/{{commentId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"content\": \"edited comment\"\n}" }
+          }
+        },
+        {
+          "name": "Delete comment",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/comment/{{commentId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Chat",
+      "item": [
+        {
+          "name": "Get chat with user",
+          "request": { "method": "GET", "url": "{{baseUrl}}/chat/{{friendId}}" }
+        },
+        {
+          "name": "Create group (saves groupId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data) pm.collectionVariables.set('groupId', json.data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/chat/group",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"group\": \"my team\",\n  \"participants\": [\"{{friendId}}\"],\n  \"group_image\": \"team.png\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get group chat",
+          "request": { "method": "GET", "url": "{{baseUrl}}/chat/group/{{groupId}}" }
+        }
+      ]
+    }
+  ]
+}
